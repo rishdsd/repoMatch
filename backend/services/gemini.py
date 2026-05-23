@@ -1,17 +1,18 @@
 import os
 import json
-from google import genai
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def call_gemini(prompt: str) -> str:
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
+def call_gemini(prompt: str) -> str:  # keeping same function name so nothing else breaks
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3
     )
-    return response.text.strip()
+    return response.choices[0].message.content.strip()
 
 def parse_json_response(text: str) -> any:
     clean = text.replace("```json", "").replace("```", "").strip()

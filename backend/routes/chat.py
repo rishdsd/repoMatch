@@ -18,28 +18,26 @@ async def chat(payload: ChatMessage):
     answers = payload.answers
     answers[payload.latest_stage_id] = payload.latest_answer
 
-    # Check if conversation is complete
     if is_complete(answers):
         profile = build_profile(answers)
-        
-        # DEBUG
-        from ..services.github import build_search_query, search_repos, enrich_repos
-        query = build_search_query(profile)
-        print("SEARCH QUERY:", query)
-        
-        repos = search_repos(profile)
-        print("RAW REPOS COUNT:", len(repos))
-        
-        enriched = enrich_repos(repos)
-        print("ENRICHED COUNT:", len(enriched))
-        
-        results = run_matching(enriched, profile)
-        print("FINAL RESULTS:", len(results))
+        print("\n=== PROFILE ===")
+        print(profile)
 
-        return {
-            "status": "complete",
-            "results": results
-        }
+        repos = search_repos(profile)
+        print(f"\n=== RAW REPOS: {len(repos)} ===")
+        for r in repos[:3]:  # print first 3 only
+            print(f"  - {r['full_name']} | stars: {r['stargazers_count']}")
+
+        enriched = enrich_repos(repos)
+        print(f"\n=== ENRICHED: {len(enriched)} ===")
+        for r in enriched[:3]:
+            print(f"  - {r['name']} | health: {r['health_score']} | contributing: {r['has_contributing']}")
+
+        results = run_matching(enriched, profile)
+        print(f"\n=== FINAL RESULTS: {len(results)} ===")
+        for r in results:
+            print(f"  - {r.get('name')} | issue: {r.get('issue_title')} | url: {r.get('url')}")
+        print("================\n")
 
     # Not complete — return next question
     next_stage = get_next_stage(answers)

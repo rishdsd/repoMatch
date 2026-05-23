@@ -16,15 +16,14 @@ def build_search_query(profile: dict) -> str:
         "archived:false",
         "is:public",
         f"pushed:>{(datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')}",
+        "good-first-issues:>0",  # only repos with open good first issues
     ]
 
-    # Skill level drives star range
     if profile["skill_level"] == "beginner":
         parts.append("stars:50..800")
     else:
         parts.append("stars:50..5000")
 
-    # Add only ONE topic at most — multiple topics is too restrictive
     topics = profile.get("domain_topics", [])
     if topics:
         parts.append(f"topic:{topics[0]}")
